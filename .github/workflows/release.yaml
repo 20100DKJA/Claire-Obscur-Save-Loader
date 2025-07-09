@@ -1,0 +1,113 @@
+name: CD -> Bump version and create release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    if: endsWith(github.event.head_commit.message, '[tag]') || github.event_name == 'workflow_dispatch'
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      tag-name: ${{ steps.bump-version.outputs.version }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create bump and changelog
+        id: bump-version
+        uses: commitizen-tools/commitizen-action@0.24.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          changelog_increment_filename: body.md
+          push: false
+
+      - run: git push --tags
+
+      - name: Create Release
+        id: create-release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ env.REVISION }}
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+          body_path: "body.md"
+          tag_name: ${{ env.REVISION }}
+
+  build-release:
+    name: Build Release
+    needs: create-release
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            release_suffix: linux
+          - os: windows-latest
+            release_suffix: windows
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QT
+        uses: jurplel/install-qt-action@v4
+        with:
+          host: ${{ matrix.release_suffix }}
+          version: '5.15'
+
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: pdm install --dev -G :all
+
+      - name: Build Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          source .venv/bin/activate
+          pyinstaller \
+            --onefile \
+            --collect-data clair_obscur_save_loader \
+            --add-data "icon.ico:." \
+            --windowed \
+            --icon icon.ico \
+            --name ESL_${{ matrix.release_suffix }}.exe \
+            clair_obscur_save_loader/app.py
+
+      - name: Build Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          ./.venv/Scripts/activate
+          pyinstaller `
+            --onefile `
+            --collect-data clair_obscur_save_loader `
+            --add-data "icon.ico:." `
+            --windowed `
+            --icon icon.ico `
+            --name ESL_${{ matrix.release_suffix }}.exe `
+            clair_obscur_save_loader/app.py
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.create-release.outputs.tag-name }}
+          files: dist/ESL_${{ matrix.release_suffix }}.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

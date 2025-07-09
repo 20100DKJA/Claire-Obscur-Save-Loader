@@ -1,0 +1,129 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "clair-obscur-save-loader"
+description = "A tools to quickly update your Expedition 33 save with some profile to organize easily."
+version = "0.3.0"
+authors = [{name = "Vincent Coppe"}, {name = "Clément Dubos", email = "contact@cdubos.fr"}]
+readme = "README.md"
+requires-python = "<3.14,>= 3.13"
+dependencies = ["PyQt5==5.15.11", "PyQt5-qt5==5.15.2"]
+
+[project.gui-scripts]
+clair-obscur-save-loader = "clair_obscur_save_loader.app:main"
+
+[dependency-groups]
+typing = ["mypy>=1.15.0", "PyQt5-stubs>=5.15.6"]
+tests = ["pytest>=8.3.1", "pytest-cov"]
+dev = [
+    "ruff>=0.11.0",
+    "tox>=4.0.0",
+    "pyinstaller>=6.13.0",
+    "pre-commit>=4.2.0",
+]
+
+[tool.flit.module]
+name = "clair_obscur_save_loader"
+
+[tool.pdm]
+distribution = true
+
+[tool.mypy]
+python_version = "3.13"
+warn_unused_configs = true
+warn_redundant_casts = true
+show_error_codes = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "clair_obscur_save_loader.*"
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+warn_unused_ignores = true
+no_implicit_reexport = true
+
+[tool.ruff]
+fix = true
+line-length = 100
+preview = true
+lint.select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # Warning
+    "W",
+    # Mccabe
+    "C90",
+    # isort
+    "I",
+    # pep8-naming
+    "N",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-annotations
+    "ANN",
+    # bandit
+    "S",
+    # flake8-builtins
+    "A",
+    # flake8-commas
+    "COM",
+    # flake8-future-annotations
+    "FA",
+    # flake8-logging
+    "LOG",
+    # flake8-logging-format
+    "G",
+    # flake8-print
+    "T20",
+    # flake8-pytest-style
+    "PT",
+    # flake8-simplify
+    "SIM",
+    # flake8-type-checking
+    "TCH",
+    # tryceratops
+    "TRY",
+]
+lint.ignore = [
+    "COM812",
+    "N802",
+    "ANN401",
+    "TRY003",
+]
+lint.per-file-ignores."tests/**.py" = [
+    "D",
+    "S101",
+]
+lint.isort.force-single-line = true
+format.quote-style = "single"
+format.docstring-code-format = true
+format.preview = true
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.3.0"
+version_files = [
+    "pyproject.toml:version",
+    "clair_obscur_save_loader/__init__.py"
+]
+style = [
+    ["qmark", "fg:#ff9d00 bold"],
+    ["question", "bold"],
+    ["answer", "fg:#ff9d00 bold"],
+    ["pointer", "fg:#ff9d00 bold"],
+    ["highlighted", "fg:#ff9d00 bold"],
+    ["selected", "fg:#cc5454"],
+    ["separator", "fg:#cc5454"],
+    ["instruction", ""],
+    ["text", ""],
+    ["disabled", "fg:#858585 italic"]
+]

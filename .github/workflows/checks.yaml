@@ -1,0 +1,49 @@
+name: CI -> Check tests and build
+on:
+  push:
+    branches:
+    - main
+    tags:
+    - "*.*.*"
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  code-quality:
+    name: Check tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: extractions/setup-just@v3
+    - name: Setup PDM
+      uses: pdm-project/setup-pdm@v4
+      with:
+        python-version: '3.13'
+    - name: Install dependencies
+      run: |
+        pip install tox pre-commit
+        just --shell bash devenv
+    - name: Run Validation
+      run: |
+        source .venv/bin/activate
+        just --shell bash check
+
+  check-build:
+    name: Check build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: extractions/setup-just@v3
+    - name: Setup PDM
+      uses: pdm-project/setup-pdm@v4
+      with:
+        python-version: '3.13'
+    - name: Install dependencies
+      run: |
+        pip install tox pre-commit
+        just --shell bash devenv
+    - name: Build
+      run: |
+        source .venv/bin/activate
+        just --shell bash build
