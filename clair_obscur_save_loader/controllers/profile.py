@@ -10,6 +10,8 @@ from PyQt5.QtWidgets import QListWidgetItem
 from PyQt5.QtWidgets import QMenu
 from PyQt5.QtWidgets import QMessageBox
 
+from clair_obscur_save_loader.config import Config
+from clair_obscur_save_loader.controllers.settings import SettingsController
 from clair_obscur_save_loader.definitions import Color
 from clair_obscur_save_loader.definitions import Messages
 from clair_obscur_save_loader.managers.profile import ProfileManager
@@ -29,6 +31,8 @@ class ProfileController(QObject):
         profile_view: ProfileComponent,
         save_view: SaveComponent,
         popup_view: PopUpComponent,
+        settings_controller: SettingsController,
+        config: Config,
         profile_manager: ProfileManager,
         save_manager: SaveManager,
     ) -> None:
@@ -36,9 +40,13 @@ class ProfileController(QObject):
         self._profile_view = profile_view
         self._save_view = save_view
         self._popup_view = popup_view
+        self._settings_controller = settings_controller
+        self._config = config
         self._profile_manager = profile_manager
         self._save_manager = save_manager
+        self.setStartupProfile()
         self.refreshProfiles()
+        self.selectProfile()
         self.setupConnections()
 
     def setupConnections(self) -> None:
@@ -47,12 +55,23 @@ class ProfileController(QObject):
         self._profile_view.buttons['Delete Profile'].clicked.connect(self.deleteProfile)
         self._profile_view.buttons['Duplicate Profile'].clicked.connect(self.duplicateProfile)
         self._profile_view.buttons['Rename Profile'].clicked.connect(self.renameProfile)
+        self._profile_view.buttons['Settings'].clicked.connect(self.openSettings)
         self._profile_view.currentTextChanged.connect(self.selectProfile)
         self._save_view.import_button.clicked.connect(self.importSave)
         self._save_view.load_button.clicked.connect(self.loadSave)
 
         # Connecter le menu contextuel
         self._save_view.customContextMenuRequested.connect(self.showContextMenu)
+
+    def setStartupProfile(self) -> None:
+        initial = (
+            self._config.last_profile
+            if self._config.startup_profile is None
+            else self._config.startup_profile
+        )
+        profiles = self._profile_manager.get_list_of_profiles()
+        if initial is not None and initial in profiles:
+            self._profile_view.setCurrentText(initial)
 
     def refreshProfiles(self) -> None:
         current = self._profile_view.currentProfile()
@@ -81,6 +100,8 @@ class ProfileController(QObject):
             self._save_view.addItems(
                 self._profile_manager.get_list_of_saves(self._profile_view.currentProfile())
             )
+            self._config.last_profile = self._profile_view.currentProfile()
+            self._config.save_config()
 
     def createProfile(self, name: str) -> None:
         name, ok = QInputDialog.getText(
@@ -312,3 +333,6 @@ class ProfileController(QObject):
             menu.addAction(action)
 
         menu.exec_(self._save_view.viewport().mapToGlobal(position))
+
+    def openSettings(self) -> None:
+        self._settings_controller.show()

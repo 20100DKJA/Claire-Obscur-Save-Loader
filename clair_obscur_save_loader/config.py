@@ -23,6 +23,8 @@ class Config:
         # Use the config location from definitions
         self.config_file = os.path.join(CONFIG_LOCATION, CONFIG_FILE_NAME)
         self.save_location: str | None = self.DEFAULT_SAVE_LOCATION
+        self.last_profile: str | None = None
+        self.startup_profile: str | None = None
 
         self._load_config()
 
@@ -36,7 +38,7 @@ class Config:
         # In others cases, it's not determinable
         return None
 
-    def _save_config(self) -> None:
+    def save_config(self) -> None:
         if not os.path.exists(CONFIG_LOCATION):
             os.makedirs(CONFIG_LOCATION)
         try:
@@ -44,6 +46,8 @@ class Config:
                 json.dump(
                     {
                         'save_location': self.save_location,
+                        'last_profile': self.last_profile,
+                        'startup_profile': self.startup_profile,
                     },
                     f,
                     indent=2,

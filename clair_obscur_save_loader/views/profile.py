@@ -27,6 +27,7 @@ class ProfileComponent(QComboBox):
             'Delete Profile',
             'Duplicate Profile',
             'Rename Profile',
+            'Settings',
         ]:
             self.buttons[label] = QPushButton(label, self.root)
             self.vbox_profile.addWidget(self.buttons[label], alignment=Qt.AlignTop)

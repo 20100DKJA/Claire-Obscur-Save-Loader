@@ -8,6 +8,7 @@ from clair_obscur_save_loader import views
 
 from .initial_setup import InitialSetupController
 from .profile import ProfileController
+from .settings import SettingsController
 
 
 class MainController:
@@ -25,10 +26,18 @@ class MainController:
 
         profile_manager = managers.ProfileManager()
 
+        settings = SettingsController(
+            view=self._view.settings,
+            config=self._config,
+            profile_manager=profile_manager,
+        )
+
         self._profile_controller = ProfileController(
             profile_view=self._view.profile,
             save_view=self._view.save,
             popup_view=self._view.popup,
+            settings_controller=settings,
+            config=self._config,
             profile_manager=profile_manager,
             save_manager=managers.SaveManager(profile_manager=profile_manager),
         )

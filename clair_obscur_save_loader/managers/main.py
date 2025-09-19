@@ -49,7 +49,7 @@ class MainManager:
         return True
 
     def save_config(self) -> None:
-        self.config._save_config()
+        self.config.save_config()
 
     def reset_paths(self) -> None:
         self._current_save_path = None

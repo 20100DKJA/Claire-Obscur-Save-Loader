@@ -15,6 +15,7 @@ from .label import LabelComponent
 from .popup import PopUpComponent
 from .profile import ProfileComponent
 from .save import SaveComponent
+from .settings import SettingsWindow
 
 
 class MainWindow(QMainWindow):
@@ -82,6 +83,7 @@ class MainWindow(QMainWindow):
         self.profile = ProfileComponent(self)
         self.save = SaveComponent(self)
         self.setup = InitialSetupComponent(self)
+        self.settings = SettingsWindow(self)
 
         # Layout positioning
         layout.addWidget(self.label, 0, 0)
