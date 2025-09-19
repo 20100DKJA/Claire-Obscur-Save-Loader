@@ -10,11 +10,11 @@ from PyQt5.QtWidgets import QWidget
 
 from clair_obscur_save_loader.definitions import APP_TITLE
 
+from .initial_setup import InitialSetupComponent
 from .label import LabelComponent
 from .popup import PopUpComponent
 from .profile import ProfileComponent
 from .save import SaveComponent
-from .settings import SettingsComponent
 
 
 class MainWindow(QMainWindow):
@@ -81,7 +81,7 @@ class MainWindow(QMainWindow):
         self.popup = PopUpComponent(self)
         self.profile = ProfileComponent(self)
         self.save = SaveComponent(self)
-        self.settings = SettingsComponent(self)
+        self.setup = InitialSetupComponent(self)
 
         # Layout positioning
         layout.addWidget(self.label, 0, 0)

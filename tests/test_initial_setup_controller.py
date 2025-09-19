@@ -6,15 +6,15 @@ from unittest.mock import patch
 import pytest
 from PyQt5.QtWidgets import QFileDialog
 
-from clair_obscur_save_loader.controllers.settings import SettingsController
+from clair_obscur_save_loader.controllers.initial_setup import InitialSetupController
 from clair_obscur_save_loader.managers import MainManager
-from clair_obscur_save_loader.views.settings import SettingsComponent
+from clair_obscur_save_loader.views.initial_setup import InitialSetupComponent
 
 
 @pytest.fixture
-def mock_settings_view() -> SettingsComponent:
+def mock_initial_setup_view() -> InitialSetupComponent:
     """Crée un mock du composant de paramètres"""
-    view = MagicMock(spec=SettingsComponent)
+    view = MagicMock(spec=InitialSetupComponent)
     view.path_label = MagicMock()
     view.continue_button = MagicMock()
     view.select_button = MagicMock()
@@ -31,33 +31,37 @@ def mock_manager() -> MainManager:
 
 @pytest.fixture
 def controller(
-    mock_settings_view: SettingsComponent, mock_manager: MainManager
-) -> SettingsController:
+    mock_initial_setup_view: InitialSetupComponent, mock_manager: MainManager
+) -> InitialSetupController:
     """Crée un contrôleur avec des mocks"""
-    return SettingsController(view=mock_settings_view, manager=mock_manager)
+    return InitialSetupController(view=mock_initial_setup_view, manager=mock_manager)
 
 
-class TestSettingsController:
-    def test_initialize_controller(self, controller: SettingsController) -> None:
+class TestInitialSetupController:
+    def test_initialize_controller(self, controller: InitialSetupController) -> None:
         """Teste l'initialisation du contrôleur"""
         assert controller is not None
         assert controller._view is not None
         assert controller._manager is not None
 
     def test_setup_connections(
-        self, controller: SettingsController, mock_settings_view: SettingsComponent
+        self,
+        controller: InitialSetupController,
+        mock_initial_setup_view: InitialSetupComponent,
     ) -> None:
         """Teste que les connexions de signal/slot sont configurées"""
         # Vérifie si la méthode existe
         controller.setupConnections()
 
         # Vérifie que les boutons ont été connectés
-        assert mock_settings_view.select_button.clicked.connect.called
-        assert mock_settings_view.exit_button.clicked.connect.called
-        assert mock_settings_view.continue_button.clicked.connect.called
+        assert mock_initial_setup_view.select_button.clicked.connect.called
+        assert mock_initial_setup_view.exit_button.clicked.connect.called
+        assert mock_initial_setup_view.continue_button.clicked.connect.called
 
     def test_browse_directory(
-        self, controller: SettingsController, mock_settings_view: SettingsComponent
+        self,
+        controller: InitialSetupController,
+        mock_initial_setup_view: InitialSetupComponent,
     ) -> None:
         """Teste la navigation pour sélectionner un répertoire"""
         # Créer un répertoire temporaire avec la structure attendue

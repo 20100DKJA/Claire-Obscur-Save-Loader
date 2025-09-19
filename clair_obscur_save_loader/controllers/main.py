@@ -6,8 +6,8 @@ from clair_obscur_save_loader import config
 from clair_obscur_save_loader import managers
 from clair_obscur_save_loader import views
 
+from .initial_setup import InitialSetupController
 from .profile import ProfileController
-from .settings import SettingsController
 
 
 class MainController:
@@ -17,11 +17,11 @@ class MainController:
         self._manager = managers.MainManager()
         self._view = views.MainWindow()
 
-        self._settings_controller = SettingsController(
-            view=self._view.settings, manager=self._manager
+        self._initial_setup_controller = InitialSetupController(
+            view=self._view.setup, manager=self._manager
         )
         if not self._manager.is_configured:
-            self._view.settings.exec()
+            self._view.setup.exec()
 
         profile_manager = managers.ProfileManager()
 

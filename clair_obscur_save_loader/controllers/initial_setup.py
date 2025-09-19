@@ -6,11 +6,11 @@ from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QWidget
 
 from clair_obscur_save_loader.managers.main import MainManager
-from clair_obscur_save_loader.views.settings import SettingsComponent
+from clair_obscur_save_loader.views.initial_setup import InitialSetupComponent
 
 
-class SettingsController(QObject):
-    def __init__(self, *, view: SettingsComponent, manager: MainManager) -> None:
+class InitialSetupController(QObject):
+    def __init__(self, *, view: InitialSetupComponent, manager: MainManager) -> None:
         super().__init__()
         self._manager = manager
         self._view = view
