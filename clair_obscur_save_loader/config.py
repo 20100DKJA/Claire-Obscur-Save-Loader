@@ -25,6 +25,7 @@ class Config:
         self.save_location: str | None = self.DEFAULT_SAVE_LOCATION
         self.last_profile: str | None = None
         self.startup_profile: str | None = None
+        self.restart_command: str | None = None
 
         self._load_config()
 
@@ -48,6 +49,7 @@ class Config:
                         'save_location': self.save_location,
                         'last_profile': self.last_profile,
                         'startup_profile': self.startup_profile,
+                        'restart_command': self.restart_command,
                     },
                     f,
                     indent=2,

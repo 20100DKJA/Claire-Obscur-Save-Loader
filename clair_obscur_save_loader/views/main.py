@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QWidget
 
 from clair_obscur_save_loader.definitions import APP_TITLE
 
+from .controls import ControlsComponent
 from .initial_setup import InitialSetupComponent
 from .label import LabelComponent
 from .popup import PopUpComponent
@@ -82,6 +83,7 @@ class MainWindow(QMainWindow):
         self.popup = PopUpComponent(self)
         self.profile = ProfileComponent(self)
         self.save = SaveComponent(self)
+        self.controls = ControlsComponent(self)
         self.setup = InitialSetupComponent(self)
         self.settings = SettingsWindow(self)
 
@@ -91,4 +93,5 @@ class MainWindow(QMainWindow):
         layout.addLayout(self.profile.vbox_profile, 1, 1, alignment=Qt.AlignTop)
         layout.addWidget(self.save, 1, 0)
         layout.addLayout(self.save.h_layout, 2, 0)
-        layout.addWidget(self.popup, 3, 0)
+        layout.addWidget(self.controls, 3, 0)
+        layout.addWidget(self.popup, 4, 0)

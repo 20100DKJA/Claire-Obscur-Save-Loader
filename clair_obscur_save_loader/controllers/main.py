@@ -6,6 +6,7 @@ from clair_obscur_save_loader import config
 from clair_obscur_save_loader import managers
 from clair_obscur_save_loader import views
 
+from .controls import ControlsController
 from .initial_setup import InitialSetupController
 from .profile import ProfileController
 from .settings import SettingsController
@@ -31,6 +32,12 @@ class MainController:
             config=self._config,
             profile_manager=profile_manager,
         )
+        settings.saved.connect(self.configUpdate)
+
+        self._controls_controller = ControlsController(
+            view=self._view.controls,
+            config=self._config,
+        )
 
         self._profile_controller = ProfileController(
             profile_view=self._view.profile,
@@ -41,6 +48,9 @@ class MainController:
             profile_manager=profile_manager,
             save_manager=managers.SaveManager(profile_manager=profile_manager),
         )
+
+    def configUpdate(self) -> None:
+        self._controls_controller.configUpdate()
 
     def run(self) -> int:
         self._view.show()
