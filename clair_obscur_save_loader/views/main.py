@@ -6,13 +6,13 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QGridLayout
 from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtWidgets import QWidget
 
 from clair_obscur_save_loader.definitions import APP_TITLE
 
 from .controls import ControlsComponent
 from .initial_setup import InitialSetupComponent
-from .label import LabelComponent
 from .popup import PopUpComponent
 from .profile import ProfileComponent
 from .save import SaveComponent
@@ -79,7 +79,6 @@ class MainWindow(QMainWindow):
         screen = QApplication.primaryScreen().geometry()
         self.move((screen.width() - self.width()) // 2, (screen.height() - self.height()) // 2)
 
-        self.label = LabelComponent(self)
         self.popup = PopUpComponent(self)
         self.profile = ProfileComponent(self)
         self.save = SaveComponent(self)
@@ -88,10 +87,17 @@ class MainWindow(QMainWindow):
         self.settings = SettingsWindow(self)
 
         # Layout positioning
-        layout.addWidget(self.label, 0, 0)
         layout.addWidget(self.profile, 0, 1)
-        layout.addLayout(self.profile.vbox_profile, 1, 1, alignment=Qt.AlignTop)
-        layout.addWidget(self.save, 1, 0)
+        layout.addLayout(self.profile.vbox_profile, 1, 1, 4, 1, alignment=Qt.AlignTop)
+        layout.addWidget(self.save, 0, 0, 2, 1)
         layout.addLayout(self.save.h_layout, 2, 0)
         layout.addWidget(self.controls, 3, 0)
         layout.addWidget(self.popup, 4, 0)
+
+        # Resize behavior
+        self.profile.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))
+        self.save.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
+        self.controls.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))
+        self.popup.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))
+        layout.setColumnStretch(0, 3)
+        layout.setColumnStretch(1, 1)
