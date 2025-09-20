@@ -30,7 +30,7 @@ class SaveManager:
             cast('str', self.profile_manager.profiles_save_path), profile, name
         )
         if os.path.exists(new_save_path):
-            os.chmod(new_save_path, stat.S_IWUSR)
+            os.chmod(new_save_path, stat.S_IRWXU)
             shutil.rmtree(new_save_path)
         shutil.copytree(self.active_save_path, new_save_path, dirs_exist_ok=True)
         return True
@@ -45,7 +45,7 @@ class SaveManager:
             cast('str', self.profile_manager.profiles_save_path), profile, name_of_copy
         )
         if os.path.exists(new_save_path):
-            os.chmod(new_save_path, stat.S_IWUSR)
+            os.chmod(new_save_path, stat.S_IRWXU)
             shutil.rmtree(new_save_path)
         shutil.copytree(old_save_path, new_save_path, dirs_exist_ok=True)
         return True
@@ -56,7 +56,7 @@ class SaveManager:
         removed_save_path = os.path.join(
             cast('str', self.profile_manager.profiles_save_path), profile, name
         )
-        os.chmod(removed_save_path, stat.S_IWUSR)
+        os.chmod(removed_save_path, stat.S_IRWXU)
         shutil.rmtree(removed_save_path)
         return True
 

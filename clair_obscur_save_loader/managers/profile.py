@@ -26,15 +26,15 @@ class ProfileManager:
     def delete(self, name: str) -> bool:
         removed_profile_path = os.path.join(cast('str', self.profiles_save_path), name)
         for root, dirs, _ in os.walk(removed_profile_path):
-            os.chmod(root, stat.S_IWUSR)
+            os.chmod(root, stat.S_IRWXU)
             for d in dirs:
                 if d == 'Backup':
                     continue
                 dirs_path: str = os.path.join(removed_profile_path, d)
                 for folder_and_file in os.listdir(dirs_path):
                     if folder_and_file == 'Backup':
-                        os.chmod(os.path.join(dirs_path, folder_and_file), stat.S_IWUSR)
-                os.chmod(dirs_path, stat.S_IWUSR)
+                        os.chmod(os.path.join(dirs_path, folder_and_file), stat.S_IRWXU)
+                os.chmod(dirs_path, stat.S_IRWXU)
         shutil.rmtree(removed_profile_path)
         return True
 
