@@ -13,12 +13,10 @@ class ProfileComponent(QComboBox):
         self.buttons: dict[str, QPushButton] = {}
 
         # Profile selection
-        self.setEditable(True)
-        edit = self.lineEdit()
-
-        edit.setReadOnly(True)
-        edit.setPlaceholderText('Select')
+        self.setEditable(False)
+        self.setPlaceholderText('Select')
         self.setInsertPolicy(QComboBox.NoInsert)
+        self.setSizeAdjustPolicy(QComboBox.AdjustToContents)
 
         # Profile buttons
         self.vbox_profile = QVBoxLayout()

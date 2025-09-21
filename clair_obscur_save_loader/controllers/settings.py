@@ -2,6 +2,7 @@ from PyQt5.QtCore import QObject
 from PyQt5.QtCore import pyqtSignal
 
 from clair_obscur_save_loader.config import Config
+from clair_obscur_save_loader.config import SaveDoubleClickAction
 from clair_obscur_save_loader.managers import ProfileManager
 from clair_obscur_save_loader.views.settings import SettingsWindow
 
@@ -37,6 +38,19 @@ class SettingsController(QObject):
         else:
             self._view.startup_profile.setCurrentText(self._config.startup_profile)
 
+        self._view.expand_all_on_startup.setChecked(bool(self._config.expand_all_on_startup))
+
+        if self._config.save_double_click_action is None:
+            self._view.double_click_action.setCurrentIndex(
+                self._view.double_click_action.findData(SaveDoubleClickAction.LOAD_SAVE)
+            )
+        else:
+            self._view.double_click_action.setCurrentIndex(
+                self._view.double_click_action.findData(
+                    SaveDoubleClickAction(self._config.save_double_click_action)
+                )
+            )
+
         idx = 0
         if self._config.restart_command is not None:
             idx = self._view.restart_command_choice.findData(self._config.restart_command)
@@ -56,6 +70,8 @@ class SettingsController(QObject):
             if self._view.startup_profile.currentIndex() < 1
             else self._view.startup_profile.currentText()
         )
+        self._config.expand_all_on_startup = self._view.expand_all_on_startup.isChecked()
+        self._config.save_double_click_action = self._view.double_click_action.currentData()
         self._config.restart_command = (
             None
             if self._view.restart_command_choice.currentIndex() < 1
@@ -75,9 +91,9 @@ class SettingsController(QObject):
         self._view.restart_command.setVisible(True)
         choice = self._view.restart_command_choice.currentData()
         if choice == '':
-            self._view.restart_command.setReadOnly(False)
+            self._view.restart_command.setDisabled(False)
         else:
-            self._view.restart_command.setReadOnly(True)
+            self._view.restart_command.setDisabled(True)
             self._view.restart_command.setText(choice)
         self._view.restart_command.setCursorPosition(0)
 

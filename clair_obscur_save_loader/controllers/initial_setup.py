@@ -1,9 +1,9 @@
-from typing import cast
+import os
 
 from PyQt5.QtCore import QObject
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtWidgets import QWidget
 
 from clair_obscur_save_loader.config import Config
 from clair_obscur_save_loader.managers import SaveManager
@@ -40,6 +40,7 @@ class InitialSetupController(QObject):
 
         if folder:
             # Try to configure the save location
+            folder = os.path.normpath(folder)
             if self._set_save_location(folder):
                 self._view.path_label.setText(f'Selected: {folder}')
                 self._view.continue_button.setEnabled(True)
@@ -65,4 +66,4 @@ class InitialSetupController(QObject):
             )
 
     def reject(self) -> None:
-        cast('QWidget', self._view.root).close()
+        QApplication.quit()

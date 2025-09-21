@@ -30,7 +30,15 @@ def mock_profiles_dir() -> Iterator[str]:
         profiles_dir = os.path.join(temp_dir, PROFILES_FOLDER_NAME)
 
         os.makedirs(os.path.join(profiles_dir, 'default', 'save1'))
+        with open(
+            os.path.join(os.path.join(profiles_dir, 'default', 'save1'), 'SavesContainer.sav'), 'w'
+        ):
+            pass
         os.makedirs(os.path.join(profiles_dir, 'default', 'save2'))
+        with open(
+            os.path.join(os.path.join(profiles_dir, 'default', 'save2'), 'SavesContainer.sav'), 'w'
+        ):
+            pass
         os.makedirs(os.path.join(profiles_dir, 'other', 'save1'))
         os.makedirs(os.path.join(profiles_dir, 'empty'))
 

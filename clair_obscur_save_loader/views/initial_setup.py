@@ -1,7 +1,11 @@
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialogButtonBox
 from PyQt5.QtWidgets import QHBoxLayout
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtWidgets import QStyle
 from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtWidgets import QWidget
 
@@ -46,15 +50,21 @@ class InitialSetupComponent(QDialog):
         layout.addWidget(self.path_label)
 
         # Boutons d'action
-        action_layout = QHBoxLayout()
+        action_layout = QDialogButtonBox(Qt.Horizontal)
         self.continue_button = QPushButton('Continue')
         self.continue_button.setEnabled(False)
+        self.continue_button.setIcon(
+            QApplication.style().standardIcon(QStyle.StandardPixmap(QStyle.SP_DialogOkButton))
+        )
 
         self.exit_button = QPushButton('Exit')
+        self.exit_button.setIcon(
+            QApplication.style().standardIcon(QStyle.StandardPixmap(QStyle.SP_DialogCancelButton))
+        )
 
-        action_layout.addWidget(self.continue_button)
-        action_layout.addWidget(self.exit_button)
+        action_layout.addButton(self.exit_button, QDialogButtonBox.RejectRole)
+        action_layout.addButton(self.continue_button, QDialogButtonBox.AcceptRole)
 
-        layout.addLayout(action_layout)
+        layout.addWidget(action_layout)
 
         self.setLayout(layout)

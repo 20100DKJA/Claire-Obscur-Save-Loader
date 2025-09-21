@@ -2,7 +2,10 @@ import os
 import sys
 
 from PyQt5.QtCore import Qt
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QMoveEvent
+from PyQt5.QtGui import QResizeEvent
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QGridLayout
 from PyQt5.QtWidgets import QMainWindow
@@ -20,41 +23,81 @@ from .settings import SettingsWindow
 
 
 class MainWindow(QMainWindow):
+    new_geometry = pyqtSignal()
+
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle(APP_TITLE)
-        self.setGeometry(0, 0, 500, 500)
+        self.setMinimumSize(600, 400)
+        self.setGeometry(0, 0, 800, 500)
         self.initUI()
 
-    def applyStyle(self) -> None:
-        self.setStyleSheet("""
-            QMainWindow{
+    def applyStyle(self, app: QApplication) -> None:
+        app.setStyleSheet("""
+            QMainWindow, QDialog {
                 background-color: #181818;
             }
-            QListWidget{
+            QTreeView {
                 background-color: #1f1f1f;
                 color: #cccccc;
             }
-            QComboBox{
+            QComboBox {
                 background-color: #2c2c2c;
                 color: #cccccc;
+                selection-background-color: #2c2c2c;
+                selection-color: #cccccc;
+                padding: 4px;
             }
             QComboBox QAbstractItemView {
-                background: #2c2c2c;
-
+                background-color: #2c2c2c;
                 color: #cccccc;
                 selection-background-color: #cccccc;
                 selection-color: #5f5f5f;
             }
-
-            QPushButton{
-                background-color :  #5f5f5f;
-                color : #eeeeee;
+            QComboBox::item {
+                background-color: #2c2c2c;
+                color: #cccccc;
             }
-
-            QPushButton:hover{
-                background-color :  #cccccc;
-                color : #5f5f5f;
+            QComboBox::item:selected {
+                background-color: #cccccc;
+                color: #5f5f5f;
+            }
+            QCheckBox {
+                color: #cccccc;
+            }
+            QLabel {
+                color: #cccccc;
+            }
+            QLineEdit {
+                background-color: #2c2c2c;
+                color: #cccccc;
+            }
+            QLineEdit:disabled {
+                background-color: #2c2c2c;
+                color: #aaaaaa;
+            }
+            QMenu {
+                background-color: #2c2c2c;
+            }
+            QMenu:item {
+                background-color: #2c2c2c;
+                color: #cccccc;
+            }
+            QMenu::item:selected {
+                background-color: #cccccc;
+                color: #5f5f5f;
+            }
+            QPushButton {
+                background-color:  #5f5f5f;
+                color: #eeeeee;
+            }
+            QPushButton:hover {
+                background-color:  #cccccc;
+                color: #5f5f5f;
+            }
+            QPushButton:disabled {
+                background-color:  #5f5f5f;
+                color: #666666;
             }
         """)
 
@@ -66,8 +109,6 @@ class MainWindow(QMainWindow):
         )
         icon_path = os.path.join(base, 'icon.ico')
         self.setWindowIcon(QIcon(icon_path))
-
-        self.applyStyle()
 
         # Central widget and layout
         central_widget = QWidget()
@@ -95,9 +136,14 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.popup, 4, 0)
 
         # Resize behavior
-        self.profile.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))
         self.save.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
         self.controls.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))
         self.popup.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))
         layout.setColumnStretch(0, 3)
         layout.setColumnStretch(1, 1)
+
+    def resizeEvent(self, e: QResizeEvent) -> None:
+        self.new_geometry.emit()
+
+    def moveEvent(self, e: QMoveEvent) -> None:
+        self.new_geometry.emit()

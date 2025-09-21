@@ -10,5 +10,6 @@ class PopUpComponent(QLabel):
         self.root = parent
 
         # Popup message label
-        self.setFont(QFont('Helvetica', 15))
+        self.setFont(QFont('Helvetica', 12))
         self.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        self.setWordWrap(True)
