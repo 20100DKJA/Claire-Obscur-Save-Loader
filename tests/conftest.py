@@ -3,7 +3,6 @@ import os
 import sys
 import tempfile
 from collections.abc import Iterator
-from unittest.mock import MagicMock
 from unittest.mock import patch
 
 import pytest
@@ -11,7 +10,6 @@ from PyQt5.QtWidgets import QApplication
 
 from clair_obscur_save_loader.config import Config
 from clair_obscur_save_loader.definitions import PROFILES_FOLDER_NAME
-from clair_obscur_save_loader.managers import MainManager
 from clair_obscur_save_loader.managers.profile import ProfileManager
 from clair_obscur_save_loader.managers.save import SaveManager
 
@@ -52,13 +50,6 @@ def profile_manager(mock_profiles_dir: str) -> Iterator[ProfileManager]:
 def save_manager(profile_manager: ProfileManager) -> Iterator[SaveManager]:
     """Crée un SaveManager configuré pour utiliser le répertoire de test"""
     manager = SaveManager(profile_manager=profile_manager)
-    return manager
-
-
-@pytest.fixture
-def mock_manager() -> MainManager:
-    """Crée un mock du manager principal"""
-    manager = MagicMock(spec=MainManager)
     return manager
 
 

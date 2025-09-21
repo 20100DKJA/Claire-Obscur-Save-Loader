@@ -32,4 +32,6 @@ class TestSaveManager:
         ):
             target = os.path.join(mock_profiles_dir, PROFILES_FOLDER_NAME, '78541323')
             os.makedirs(target)
+            with open(os.path.join(target, 'SavesContainer.sav'), 'w'):
+                pass
             assert save_manager.import_save('save1', 'default')

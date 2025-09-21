@@ -10,8 +10,6 @@ from clair_obscur_save_loader.definitions import PROFILES_FOLDER_NAME
 class ProfileManager:
     def __init__(self) -> None:
         self.config = Config()
-        if not self.config.is_configured():
-            raise ValueError('Configuration is not set up')
 
     def create(self, name: str) -> bool:
         if name == '':
@@ -57,7 +55,7 @@ class ProfileManager:
     @property
     def profiles_save_path(self) -> str | None:
         if not self.config.is_configured():
-            return None
+            raise ValueError('Configuration is not set up')
 
         profile_path = os.path.join(cast('str', self.config.save_location), PROFILES_FOLDER_NAME)
         if not os.path.exists(profile_path):

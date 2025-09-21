@@ -5,14 +5,19 @@ from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QWidget
 
-from clair_obscur_save_loader.managers.main import MainManager
+from clair_obscur_save_loader.config import Config
+from clair_obscur_save_loader.managers import SaveManager
+from clair_obscur_save_loader.managers.save import find_active_save_path
 from clair_obscur_save_loader.views.initial_setup import InitialSetupComponent
 
 
 class InitialSetupController(QObject):
-    def __init__(self, *, view: InitialSetupComponent, manager: MainManager) -> None:
+    def __init__(
+        self, *, view: InitialSetupComponent, save_manager: SaveManager, config: Config
+    ) -> None:
         super().__init__()
-        self._manager = manager
+        self._save_manager = save_manager
+        self._config = config
         self._view = view
         self.setupConnections()
 
@@ -21,12 +26,21 @@ class InitialSetupController(QObject):
         self._view.select_button.clicked.connect(self.browseSaveLocation)
         self._view.exit_button.clicked.connect(self.reject)
 
+    def _set_save_location(self, location: str) -> bool:
+        save_location = find_active_save_path(location)
+        if save_location is None:
+            return False
+
+        self._config.save_location = location
+
+        return True
+
     def browseSaveLocation(self) -> None:
         folder = QFileDialog.getExistingDirectory(self._view, 'Select Game Save Directory', '')
 
         if folder:
             # Try to configure the save location
-            if self._manager.set_save_location(folder):
+            if self._set_save_location(folder):
                 self._view.path_label.setText(f'Selected: {folder}')
                 self._view.continue_button.setEnabled(True)
             else:
@@ -38,8 +52,8 @@ class InitialSetupController(QObject):
                 )
 
     def accept(self) -> None:
-        if self._manager.is_configured:
-            self._manager.save_config()
+        if self._config.is_configured():
+            self._config.save_config()
             QMessageBox.information(self._view.root, 'Success', 'Configuration successful!\n')
             self._view.close()
         else:

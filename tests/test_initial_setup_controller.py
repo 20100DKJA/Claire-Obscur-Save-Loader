@@ -6,8 +6,9 @@ from unittest.mock import patch
 import pytest
 from PyQt5.QtWidgets import QFileDialog
 
+from clair_obscur_save_loader.config import Config
 from clair_obscur_save_loader.controllers.initial_setup import InitialSetupController
-from clair_obscur_save_loader.managers import MainManager
+from clair_obscur_save_loader.managers import SaveManager
 from clair_obscur_save_loader.views.initial_setup import InitialSetupComponent
 
 
@@ -23,18 +24,27 @@ def mock_initial_setup_view() -> InitialSetupComponent:
 
 
 @pytest.fixture
-def mock_manager() -> MainManager:
-    """Crée un mock du manager principal"""
-    manager = MagicMock(spec=MainManager)
-    return manager
+def mock_save_manager() -> SaveManager:
+    save_manager = MagicMock(spec=SaveManager)
+    return save_manager
+
+
+@pytest.fixture
+def mock_config() -> Config:
+    config = MagicMock(spec=Config)
+    return config
 
 
 @pytest.fixture
 def controller(
-    mock_initial_setup_view: InitialSetupComponent, mock_manager: MainManager
+    mock_initial_setup_view: InitialSetupComponent,
+    mock_save_manager: SaveManager,
+    mock_config: Config,
 ) -> InitialSetupController:
     """Crée un contrôleur avec des mocks"""
-    return InitialSetupController(view=mock_initial_setup_view, manager=mock_manager)
+    return InitialSetupController(
+        view=mock_initial_setup_view, save_manager=mock_save_manager, config=mock_config
+    )
 
 
 class TestInitialSetupController:
@@ -42,7 +52,8 @@ class TestInitialSetupController:
         """Teste l'initialisation du contrôleur"""
         assert controller is not None
         assert controller._view is not None
-        assert controller._manager is not None
+        assert controller._save_manager is not None
+        assert controller._config is not None
 
     def test_setup_connections(
         self,
@@ -68,10 +79,12 @@ class TestInitialSetupController:
         with tempfile.TemporaryDirectory() as temp_dir:
             # Créer un sous-dossier numérique (comme attendu pour un dossier de sauvegarde valide)
             os.mkdir(os.path.join(temp_dir, '123456'))
+            with open(os.path.join(temp_dir, '123456', 'SavesContainer.sav'), 'w'):
+                pass
 
             # Simuler la boîte de dialogue de sélection de fichier
             with patch.object(QFileDialog, 'getExistingDirectory', return_value=temp_dir):
                 # Appelle la méthode qui gère la sélection de répertoire
                 # J'utilise un nom générique qui pourrait correspondre à ta vraie méthode
                 controller.browseSaveLocation()
-                assert controller._manager.set_save_location.called
+                assert controller._config.save_location == temp_dir

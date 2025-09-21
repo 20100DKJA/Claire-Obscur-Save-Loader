@@ -16,16 +16,18 @@ class MainController:
     def __init__(self) -> None:
         self._app = QApplication(sys.argv)
         self._config = config.Config()
-        self._manager = managers.MainManager()
         self._view = views.MainWindow()
 
-        self._initial_setup_controller = InitialSetupController(
-            view=self._view.setup, manager=self._manager
-        )
-        if not self._manager.is_configured:
-            self._view.setup.exec()
-
         profile_manager = managers.ProfileManager()
+        save_manager = managers.SaveManager(profile_manager=profile_manager)
+
+        self._initial_setup_controller = InitialSetupController(
+            view=self._view.setup,
+            save_manager=save_manager,
+            config=self._config,
+        )
+        if not self._config.is_configured():
+            self._view.setup.exec()
 
         settings = SettingsController(
             view=self._view.settings,
@@ -46,7 +48,7 @@ class MainController:
             settings_controller=settings,
             config=self._config,
             profile_manager=profile_manager,
-            save_manager=managers.SaveManager(profile_manager=profile_manager),
+            save_manager=save_manager,
         )
 
     def configUpdate(self) -> None:

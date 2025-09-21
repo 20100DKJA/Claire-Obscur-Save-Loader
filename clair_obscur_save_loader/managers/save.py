@@ -7,6 +7,26 @@ from clair_obscur_save_loader.config import Config
 from clair_obscur_save_loader.managers.profile import ProfileManager
 
 
+def looks_like_save_path(location: str) -> bool:
+    return os.path.exists(location) and os.path.exists(os.path.join(location, 'SavesContainer.sav'))
+
+
+def looks_like_active_save_path(location: str) -> bool:
+    return looks_like_save_path(location) and os.path.basename(location).isdigit()
+
+
+def find_active_save_path(location: str) -> str | None:
+    if not os.path.exists(location):
+        return None
+
+    for folder_name in sorted(os.listdir(location)):
+        folder_path = os.path.join(location, folder_name)
+        if os.path.isdir(folder_path) and looks_like_active_save_path(folder_path):
+            return folder_path
+
+    return None
+
+
 class SaveManager:
     def __init__(self, *, profile_manager: ProfileManager) -> None:
         self.config = Config()
@@ -18,10 +38,14 @@ class SaveManager:
 
     @property
     def active_save_path(self) -> str:
-        for folder in os.listdir(self.config.save_location):
-            if folder.isdigit():
-                return os.path.join(cast('str', self.config.save_location), folder)
-        raise FileNotFoundError('No active save folder found, please check your configuration.')
+        folder = (
+            find_active_save_path(self.config.save_location)
+            if self.config.save_location is not None
+            else None
+        )
+        if folder is None:
+            raise FileNotFoundError('No active save folder found, please check your configuration.')
+        return folder
 
     def import_save(self, name: str, profile: str) -> bool:
         if profile == '':
