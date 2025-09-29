@@ -60,6 +60,13 @@ build:
         --icon icon.ico \
         --name ESL.exe \
         clair_obscur_save_loader/app.py
+buildlinux:
+    pyinstaller \
+        --onefile \
+        --collect-data clair_obscur_save_loader \
+        --add-data "icon.ico:." \
+        --name ESL \
+        clair_obscur_save_loader/app.py
 
 # Update dependencies
 update:

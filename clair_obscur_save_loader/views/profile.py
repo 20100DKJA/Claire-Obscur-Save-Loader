@@ -13,12 +13,10 @@ class ProfileComponent(QComboBox):
         self.buttons: dict[str, QPushButton] = {}
 
         # Profile selection
-        self.setEditable(True)
-        edit = self.lineEdit()
-
-        edit.setReadOnly(True)
-        edit.setPlaceholderText('Select')
+        self.setEditable(False)
+        self.setPlaceholderText('Select')
         self.setInsertPolicy(QComboBox.NoInsert)
+        self.setSizeAdjustPolicy(QComboBox.AdjustToContents)
 
         # Profile buttons
         self.vbox_profile = QVBoxLayout()
@@ -27,6 +25,7 @@ class ProfileComponent(QComboBox):
             'Delete Profile',
             'Duplicate Profile',
             'Rename Profile',
+            'Settings',
         ]:
             self.buttons[label] = QPushButton(label, self.root)
             self.vbox_profile.addWidget(self.buttons[label], alignment=Qt.AlignTop)

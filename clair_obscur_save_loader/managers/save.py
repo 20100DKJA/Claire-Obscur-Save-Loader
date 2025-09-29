@@ -1,10 +1,31 @@
 import os
 import shutil
 import stat
-from typing import cast
+from contextlib import suppress
 
 from clair_obscur_save_loader.config import Config
+from clair_obscur_save_loader.definitions import Messages
 from clair_obscur_save_loader.managers.profile import ProfileManager
+
+
+def looks_like_save_path(location: str) -> bool:
+    return os.path.exists(location) and os.path.exists(os.path.join(location, 'SavesContainer.sav'))
+
+
+def looks_like_active_save_path(location: str) -> bool:
+    return looks_like_save_path(location) and os.path.basename(location).isdigit()
+
+
+def find_active_save_path(location: str) -> str | None:
+    if not os.path.exists(location):
+        return None
+
+    for folder_name in sorted(os.listdir(location)):
+        folder_path = os.path.join(location, folder_name)
+        if os.path.isdir(folder_path) and looks_like_active_save_path(folder_path):
+            return folder_path
+
+    return None
 
 
 class SaveManager:
@@ -14,87 +35,100 @@ class SaveManager:
         self.profile_manager = profile_manager
 
     def get_save_path(self, profile: str) -> str:
-        return os.path.join(cast('str', self.profile_manager.profiles_save_path), profile)
+        return os.path.join(self.profile_manager.profiles_save_path, profile)
 
     @property
     def active_save_path(self) -> str:
-        for folder in os.listdir(self.config.save_location):
-            if folder.isdigit():
-                return os.path.join(cast('str', self.config.save_location), folder)
-        raise FileNotFoundError('No active save folder found, please check your configuration.')
+        folder = (
+            find_active_save_path(self.config.save_location)
+            if self.config.save_location is not None
+            else None
+        )
+        if folder is None:
+            raise FileNotFoundError('No active save folder found, please check your configuration.')
+        return folder
 
-    def import_save(self, name: str, profile: str) -> bool:
+    def import_save(self, name: str, profile: str, parent_path: str, replace: bool) -> None:
         if profile == '':
             raise ValueError("Profile can't be empty")
-        new_save_path = os.path.join(
-            cast('str', self.profile_manager.profiles_save_path), profile, name
-        )
+        new_save_path = os.path.join(parent_path, name)
+        if not new_save_path.startswith(
+            os.path.join(self.profile_manager.profiles_save_path, profile)
+        ):
+            raise ValueError('Importing outside of profile directory')
         if os.path.exists(new_save_path):
-            os.chmod(new_save_path, stat.S_IWUSR)
+            if not replace:
+                raise ValueError(Messages.SAVESTATE_EXIST)
+            for root, _, _ in os.walk(new_save_path):
+                os.chmod(root, stat.S_IRWXU)
             shutil.rmtree(new_save_path)
-        shutil.copytree(self.active_save_path, new_save_path, dirs_exist_ok=True)
-        return True
-
-    def duplicate_save(self, name: str, name_of_copy: str, profile: str) -> bool:
-        if profile == '':
-            raise ValueError("Profile can't be empty")
-        old_save_path = os.path.join(
-            cast('str', self.profile_manager.profiles_save_path), profile, name
-        )
-        new_save_path = os.path.join(
-            cast('str', self.profile_manager.profiles_save_path), profile, name_of_copy
-        )
-        if os.path.exists(new_save_path):
-            os.chmod(new_save_path, stat.S_IWUSR)
-            shutil.rmtree(new_save_path)
-        shutil.copytree(old_save_path, new_save_path, dirs_exist_ok=True)
-        return True
-
-    def remove_save(self, name: str, profile: str) -> bool:
-        if profile == '':
-            raise ValueError("Profile can't be empty")
-        removed_save_path = os.path.join(
-            cast('str', self.profile_manager.profiles_save_path), profile, name
-        )
-        os.chmod(removed_save_path, stat.S_IWUSR)
-        shutil.rmtree(removed_save_path)
-        return True
-
-    def rename_save(self, old_name: str, new_name: str, profile: str) -> bool:
-        if profile == '':
-            raise ValueError("Profile can't be empty")
-        old_name_path = os.path.join(
-            cast('str', self.profile_manager.profiles_save_path), profile, old_name
-        )
-        new_name_path = os.path.join(
-            cast('str', self.profile_manager.profiles_save_path), profile, new_name
-        )
-        os.rename(old_name_path, new_name_path)
-        return True
-
-    def load_save(self, name: str, profile: str) -> bool:
-        if profile == '':
-            raise ValueError("Profile can't be empty")
-
-        loaded_save_path = os.path.join(
-            cast('str', self.profile_manager.profiles_save_path), profile, name
-        )
-
-        if os.path.exists(self.active_save_path):
-            for file in os.listdir(self.active_save_path):
-                item_path = os.path.join(self.active_save_path, file)
-                if file == 'Backup':
-                    for subfile in os.listdir(item_path):
-                        os.remove(os.path.join(item_path, subfile))
-                else:
-                    if os.path.isfile(item_path) or os.path.islink(item_path):
-                        os.remove(item_path)
-                    elif os.path.isdir(item_path):
-                        shutil.rmtree(item_path)
-
+        elif replace:
+            raise ValueError('Savestate does not exist')
         try:
-            shutil.copytree(loaded_save_path, self.active_save_path, dirs_exist_ok=True)
-        except Exception:
-            return False
+            shutil.copytree(self.active_save_path, new_save_path, dirs_exist_ok=True)
+        except Exception as e:
+            raise ValueError('Failed to import save') from e
 
-        return True
+    def duplicate_save(self, old_name: str, new_name: str, profile: str, parent_path: str) -> None:
+        if profile == '':
+            raise ValueError("Profile can't be empty")
+        old_save_path = os.path.join(parent_path, old_name)
+        new_save_path = os.path.join(parent_path, new_name)
+        if os.path.exists(new_save_path):
+            raise ValueError(Messages.SAVESTATE_EXIST)
+        try:
+            shutil.copytree(old_save_path, new_save_path, dirs_exist_ok=True)
+        except Exception as e:
+            raise ValueError('Failed to duplicate save') from e
+
+    def remove_save(self, item_path: str, profile: str, parent_path: str) -> None:
+        if profile == '':
+            raise ValueError("Profile can't be empty")
+        if not item_path.startswith(os.path.join(self.profile_manager.profiles_save_path, profile)):
+            raise ValueError('Deleting outside of profile directory')
+        if not os.path.exists(item_path):
+            raise ValueError('Savestate does not exist')
+        try:
+            for root, _, _ in os.walk(item_path):
+                os.chmod(root, stat.S_IRWXU)
+            shutil.rmtree(item_path)
+        except Exception as e:
+            raise ValueError('Failed to remove save') from e
+
+    def rename_save(self, old_name: str, new_name: str, profile: str, parent_path: str) -> None:
+        if profile == '':
+            raise ValueError("Profile can't be empty")
+        old_save_path = os.path.join(parent_path, old_name)
+        new_save_path = os.path.join(parent_path, new_name)
+        if os.path.exists(new_save_path):
+            raise ValueError(Messages.SAVESTATE_EXIST)
+        try:
+            os.rename(old_save_path, new_save_path)
+        except Exception as e:
+            raise ValueError('Failed to rename save') from e
+
+    def load_save(self, profile: str, item_path: str) -> None:
+        if profile == '':
+            raise ValueError("Profile can't be empty")
+        if not item_path.startswith(os.path.join(self.profile_manager.profiles_save_path, profile)):
+            raise ValueError('Loading outside of profile directory')
+        try:
+            dst = self.active_save_path
+            with suppress(OSError):
+                for root, _, _ in os.walk(dst):
+                    os.chmod(root, stat.S_IRWXU)
+                shutil.rmtree(dst, ignore_errors=True)
+            shutil.copytree(item_path, dst, dirs_exist_ok=True)
+        except Exception as e:
+            raise ValueError('Failed to load savestate') from e
+
+    def new_folder(self, name: str, profile: str, parent_path: str) -> None:
+        if profile == '':
+            raise ValueError("Profile can't be empty")
+        new_path = os.path.join(parent_path, name)
+        if os.path.exists(new_path):
+            raise ValueError(Messages.SAVESTATE_EXIST)
+        try:
+            os.mkdir(new_path)
+        except Exception as e:
+            raise ValueError('Failed to create folder') from e

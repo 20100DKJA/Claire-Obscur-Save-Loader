@@ -55,3 +55,4 @@ class TestProfileComponent:
         assert profile_component.buttons['Delete Profile'].isEnabled()
         assert profile_component.buttons['Duplicate Profile'].isEnabled()
         assert profile_component.buttons['Rename Profile'].isEnabled()
+        assert profile_component.buttons['Settings'].isEnabled()

@@ -33,7 +33,7 @@ class TestConfig:
             patch('os.makedirs') as mock_makedirs,
         ):
             config.save_location = '/new/game/dir'
-            config._save_config()
+            config.save_config()
 
             # Vérifier que le dossier a été créé si nécessaire
             mock_makedirs.assert_called_once()
